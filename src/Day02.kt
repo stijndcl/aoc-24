@@ -2,36 +2,18 @@ import kotlin.math.abs
 
 fun main() {
     fun isSafe(items: List<Int>): Boolean {
-        val increasing = items[0] < items[1]
-        for (i in 1 until items.size) {
-            val newIncreasing = items[i] > items[i - 1]
-            if (newIncreasing != increasing) {
-                return false
-            }
-
-            val diff = abs(items[i] - items[i - 1])
-            if (1 > diff || 3 < diff) {
-                return false
-            }
-        }
-
-        return true
+        val zipped = items.zipWithNext()
+        return zipped.all { (a, b) -> abs(a - b) in 1..3 } && zipped.map { it.first < it.second }.distinct().size == 1
     }
 
-    fun part1(input: List<String>): Int {
-        return input.count { line ->
-            isSafe(line.split(" ").map { it.toInt() })
-        }
+    fun part1(input: List<String>) = input.count { line ->
+        isSafe(line.split(" ").map { it.toInt() })
     }
 
-    fun part2(input: List<String>): Int {
-        return input.count { line ->
-            val items = line.split(" ").map { it.toInt() }
-            items.indices.any { skippedIndex ->
-                val newList = items.toMutableList()
-                newList.removeAt(skippedIndex)
-                isSafe(newList)
-            }
+    fun part2(input: List<String>) = input.count { line ->
+        val items = line.split(" ").map { it.toInt() }
+        items.indices.any { skippedIndex ->
+            isSafe(items.filterIndexed { index, _ -> index != skippedIndex })
         }
     }
 
