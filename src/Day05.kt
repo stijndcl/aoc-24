@@ -4,7 +4,7 @@ fun main() {
     fun isCorrect(sequence: List<String>): Boolean {
         val seen = mutableSetOf<String>()
         return sequence.all { newElement ->
-            (mustPrintAfter[newElement]?.intersect(seen)?.isEmpty() ?: true).also { seen.add(newElement) }
+            (mustPrintAfter[newElement]?.intersect(seen)?.isEmpty() ?: true).also { seen += newElement }
         }
     }
 
@@ -12,20 +12,8 @@ fun main() {
         val mutable = mutableListOf(sequence.first())
 
         sequence.drop(1).forEach { page ->
-            var added = false
-            run breaking@ {
-                mutable.forEachIndexed { index, s ->
-                    val set = mustPrintAfter[s]
-                    if (set == null || !set.contains(page)) {
-                        mutable.add(index, page)
-                        added = true
-                        return@breaking
-                    }
-                }
-            }
-
-            if (!added) {
-                mutable.add(page)
+            mutable.indexOfFirst { s -> mustPrintAfter[s]?.contains(page) != true }.let { i ->
+                if (i == -1) mutable += page else mutable.add(i, page)
             }
         }
 
@@ -35,23 +23,20 @@ fun main() {
     fun part1(input: List<String>): Int {
         input.takeWhile { it.contains('|') }.forEach { line ->
             val (first, second) = line.split('|')
-
-            if (first !in mustPrintAfter) {
-                mustPrintAfter[first] = mutableSetOf()
-            }
-
-            mustPrintAfter[first]?.add(second)
+            mustPrintAfter.getOrPut(first) { mutableSetOf() } += second
         }
 
-        return input.dropWhile { !it.contains(',') }.map { it.split(',') }
+        return input.dropWhile { !it.contains(',') }
+            .map { it.split(',') }
             .filter(::isCorrect)
-            .sumOf { line -> line[line.size / 2].toInt() }
+            .sumOf { it[it.size / 2].toInt() }
     }
 
-    fun part2(input: List<String>) = input.dropWhile { !it.contains(',') }.map { it.split(',') }
+    fun part2(input: List<String>) = input.dropWhile { !it.contains(',') }
+        .map { it.split(',') }
         .filterNot(::isCorrect)
         .map { fix(it) }
-        .sumOf { line -> line[line.size / 2].toInt() }
+        .sumOf { it[it.size / 2].toInt() }
 
     val input = readInput("Day05")
     part1(input).println()

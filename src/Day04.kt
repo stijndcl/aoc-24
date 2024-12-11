@@ -1,11 +1,7 @@
 typealias Coordinate = Pair<Int, Int>
 
 fun List<Int>.pairedPermutations() = sequence {
-    forEach { x ->
-        forEach { y ->
-            yield(Pair(x, y))
-        }
-    }
+    forEach { x -> forEach { y -> yield(Pair(x, y)) } }
 }
 
 fun main() {
@@ -37,17 +33,17 @@ fun main() {
     }
 
     val p2coordinates = listOf(Pair(Coordinate(-1, -1), Coordinate(1, 1)), Pair(Coordinate(-1, 1), Coordinate(1, -1)))
+    val p2expected = listOf('M', 'S')
 
     fun part2(input: List<String>) = input.indices.sumOf { row ->
-        input[row].indices.filter { input[row][it] == 'A' }.count { col ->
-            p2coordinates.all { (first, second) ->
-                try {
-                    val firstLetter = input[row + first.first][col + first.second]
-                    val secondLetter = input[row + second.first][col + second.second]
-                    firstLetter == 'S' && secondLetter == 'M' || firstLetter == 'M' && secondLetter == 'S'
-                } catch (e: IndexOutOfBoundsException) {
-                    false
-                }
+        input[row].indices.count { col ->
+            input[row][col] == 'A' && p2coordinates.all { (first, second) ->
+                val (fx, fy) = first; val (sx, sy) = second
+
+                listOfNotNull(
+                    input.getOrNull(row + fx)?.getOrNull(col + fy),
+                    input.getOrNull(row + sx)?.getOrNull(col + sy)
+                ).sorted() == p2expected
             }
         }
     }
